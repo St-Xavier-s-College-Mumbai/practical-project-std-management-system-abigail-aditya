@@ -1,0 +1,160 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_STUDENTS 100
+#define NAME_LENGTH 50
+
+typedef struct {
+    int roll_no;
+    char name[NAME_LENGTH];
+    int age;
+    int uid;
+    char course[NAME_LENGTH];
+} Student;
+
+Student students[MAX_STUDENTS];
+int studentCount = 0;
+
+int isRollNoDuplicate(int roll_no) {
+    for (int i = 0; i < studentCount; i++) {
+        if (students[i].roll_no == roll_no) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void addStudent() {
+    if (studentCount >= MAX_STUDENTS) {
+        printf("Student limit reached!\n");
+        return;
+    }
+    
+    Student newStudent;
+    newStudent.roll_no = studentCount + 1;
+    printf("\nEnter Roll number: ");
+    scanf("%d", &newStudent.roll_no);
+
+    if (isRollNoDuplicate(newStudent.roll_no)) {
+        printf("Roll number %d already exists! Please enter a unique roll number.\n", newStudent.roll_no);
+        return;
+    }
+
+    printf("Enter Name: ");
+    scanf("%s", newStudent.name);
+    printf("Enter Age: ");
+    scanf("%d", &newStudent.age);
+    printf("Enter UID: ");
+    scanf("%d", &newStudent.uid);
+    printf("Enter Course: ");
+    scanf("%s", &newStudent.course);
+    
+    students[studentCount] = newStudent;
+    studentCount++;
+
+    for (int i = 0; i < studentCount - 1; i++) {
+        for (int j = 0; j < studentCount - i - 1; j++) {
+            if (students[j].roll_no > students[j + 1].roll_no) {
+                Student temp = students[j];
+                students[j] = students[j + 1];
+                students[j + 1] = temp;
+            }
+        }
+    }
+
+    printf("Student added successfully!\n");
+}
+
+void viewStudents() {
+    if (studentCount == 0) {
+        printf("No students to display.\n");
+        return;
+    }
+    
+    printf("\nRoll.No.\tName\tAge\tUID\t\tCourse\n");
+    printf("-- -- -- -- -- -- -- -- -- -- -- -- -- --\n");
+    for (int i = 0; i < studentCount; i++) {
+        printf("%d\t\t%s\t%d\t%d\t\t%s\n", students[i].roll_no, students[i].name, students[i].age, students[i].uid, students[i].course);
+    }
+}
+
+void updateStudent() {
+    int roll_no;
+    printf("\nEnter Roll Number to update: ");
+    scanf("%d", &roll_no);
+
+    for (int i = 0; i < studentCount; i++) {
+        if (students[i].roll_no == roll_no) {
+            printf("Updating student roll number %d:\n", students[i].roll_no);
+            printf("Enter new name (current: %s): ", students[i].name);
+            scanf("%s", students[i].name);
+            printf("Enter new age (current: %d): ", students[i].age);
+            scanf("%d", &students[i].age);
+            printf("Enter UID (current: %d): ", students[i].uid);
+            scanf("%d", &students[i].uid);
+            printf("Enter Course (current: %s): ", students[i].course);
+            scanf("%s", &students[i].course);
+            printf("Student information updated successfully!\n");
+            return;
+        }
+    }
+    
+    printf("Invalid roll number!\n");
+}
+
+void deleteStudent() {
+    int roll_no;
+    printf("\nEnter student Roll number to delete: ");
+    scanf("%d", &roll_no);
+
+    for (int i = 0; i < studentCount; i++) {
+        if (students[i].roll_no == roll_no) {
+            for (int j = i; j < studentCount - 1; j++) {
+                students[j] = students[j + 1];
+            }
+            studentCount--;
+            printf("Student deleted successfully!\n");
+            return;
+        }
+    }
+    
+    printf("Invalid roll number!\n");
+}
+
+int main() {
+    int choice;
+    
+    while (1) {
+        printf("\n--- Student Management System ---\n\n");
+        printf("1. Add Student\n");
+        printf("2. View Students\n");
+        printf("3. Update Student\n");
+        printf("4. Delete Student\n");
+        printf("5. Exit\n\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                addStudent();
+                break;
+            case 2:
+                viewStudents();
+                break;
+            case 3:
+                updateStudent();
+                break;
+            case 4:
+                deleteStudent();
+                break;
+            case 5:
+                printf("Exiting the program...\n");
+                exit(0);
+            default:
+                printf("Invalid choice! Please try again.\n");
+        }
+    }
+    
+    return 0;
+}
