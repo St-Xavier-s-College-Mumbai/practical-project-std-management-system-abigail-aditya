@@ -16,6 +16,14 @@ typedef struct {
 Student students[MAX_STUDENTS];
 int studentCount = 0;
 
+int isRollNoDuplicate(int roll_no);
+void writeToCSV(); 
+void loadFromCSV(); 
+void addStudent(); 
+void viewStudents(); 
+void updateStudent(); 
+void deleteStudent(); 
+
 int isRollNoDuplicate(int roll_no) {
     for (int i = 0; i < studentCount; i++) {
         if (students[i].roll_no == roll_no) {
@@ -25,14 +33,47 @@ int isRollNoDuplicate(int roll_no) {
     return 0;
 }
 
-void addStudent() {
+void writeToCSV() { // Store info in CSV
+    FILE *file = fopen("students.csv", "w"); // Overwrite the file
+    if (!file) {
+        printf("Error opening file for writing!\n");
+        return;
+    }
+    
+    for (int i = 0; i < studentCount; i++) {
+        fprintf(file, "%d,%s,%d,%d,%s\n", students[i].roll_no, students[i].name, students[i].age, students[i].uid, students[i].course);
+    }
+    
+    fclose(file);
+}
+
+void loadFromCSV() { //To Load data from CSV
+    FILE *file = fopen("students.csv", "r");
+    if (!file) {
+        printf("No existing data found, starting fresh.\n");
+        return;
+    }
+
+    while (fscanf(file, "%d,%49[^,],%d,%d,%49[^,\n]\n", 
+                  &students[studentCount].roll_no, 
+                  students[studentCount].name, 
+                  &students[studentCount].age, 
+                  &students[studentCount].uid, 
+                  students[studentCount].course) == 5) {
+        studentCount++;
+        if (studentCount >= MAX_STUDENTS) break;
+    }
+    
+    fclose(file);
+}
+
+void addStudent() { // To add student 
     if (studentCount >= MAX_STUDENTS) {
         printf("Student limit reached!\n");
         return;
     }
     
     Student newStudent;
-    newStudent.roll_no = studentCount + 1;
     printf("\nEnter Roll number: ");
     scanf("%d", &newStudent.roll_no);
 
@@ -48,11 +89,12 @@ void addStudent() {
     printf("Enter UID: ");
     scanf("%d", &newStudent.uid);
     printf("Enter Course: ");
-    scanf("%s", &newStudent.course);
+    scanf("%s", newStudent.course);
     
     students[studentCount] = newStudent;
     studentCount++;
 
+    // Sort students by roll number
     for (int i = 0; i < studentCount - 1; i++) {
         for (int j = 0; j < studentCount - i - 1; j++) {
             if (students[j].roll_no > students[j + 1].roll_no) {
@@ -64,16 +106,17 @@ void addStudent() {
     }
 
     printf("Student added successfully!\n");
+    writeToCSV();  // Writes to CSV after adding a student
 }
 
-void viewStudents() {
+void viewStudents() { 
     if (studentCount == 0) {
         printf("No students to display.\n");
         return;
     }
     
     printf("\nRoll.No.\tName\tAge\tUID\t\tCourse\n");
-    printf("-- -- -- -- -- -- -- -- -- -- -- -- -- --\n");
+    printf("-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --\n");
     for (int i = 0; i < studentCount; i++) {
         printf("%d\t\t%s\t%d\t%d\t\t%s\n", students[i].roll_no, students[i].name, students[i].age, students[i].uid, students[i].course);
     }
@@ -94,8 +137,9 @@ void updateStudent() {
             printf("Enter UID (current: %d): ", students[i].uid);
             scanf("%d", &students[i].uid);
             printf("Enter Course (current: %s): ", students[i].course);
-            scanf("%s", &students[i].course);
+            scanf("%s", students[i].course);
             printf("Student information updated successfully!\n");
+            writeToCSV();  
             return;
         }
     }
@@ -103,7 +147,7 @@ void updateStudent() {
     printf("Invalid roll number!\n");
 }
 
-void deleteStudent() {
+void deleteStudent() { // Delete student info
     int roll_no;
     printf("\nEnter student Roll number to delete: ");
     scanf("%d", &roll_no);
@@ -115,6 +159,7 @@ void deleteStudent() {
             }
             studentCount--;
             printf("Student deleted successfully!\n");
+            writeToCSV();  // Write to CSV after deleting a student
             return;
         }
     }
@@ -125,6 +170,8 @@ void deleteStudent() {
 int main() {
     int choice;
     
+    loadFromCSV(); // Load existing students data from CSV file at the start
+
     while (1) {
         printf("\n--- Student Management System ---\n\n");
         printf("1. Add Student\n");
